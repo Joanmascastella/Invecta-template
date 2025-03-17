@@ -99,13 +99,14 @@ MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / "media"
 
 # Static files (CSS, JavaScript, Images)
-STATIC_URL = "/static/"
+STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / "staticfiles"
+STATICFILES_DIRS = [
+    BASE_DIR / "breiflyplatform" / "static",
+]
 STATICFILES_STORAGE = os.environ.get(
     "STATICFILES_STORAGE", "whitenoise.storage.CompressedManifestStaticFilesStorage"
 )
-
-
 
 # Default primary key field type
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
