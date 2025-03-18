@@ -1,49 +1,59 @@
 {% include 'header.html' %}
 
-<div class="bg-light min-vh-100 d-flex flex-column">
-    <div class="container py-6 flex-grow-1 d-flex flex-column">
-        <h1 class="mb-5 text-center" style="font-size: 2.8rem; font-weight: 500;">Gestionar Usuarios</h1>
-
-        <div class="d-flex justify-content-center mb-5">
-            <a href="{% url 'admin' %}" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-sm border" style="font-size: 1.2rem; transition: transform 0.2s ease-in-out;">
+<div class="min-vh-100 d-flex flex-column">
+    <div class="container py-5 flex-grow-1">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{% url 'admin' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
                 Página Anterior
             </a>
+            <h1 class="text-center" style="font-size: 2.2rem; font-weight: 500;">Gestionar Usuarios</h1>
+            <div></div>
         </div>
 
-        <div class="table-responsive flex-grow-1">
-            <table class="table table-striped">
-                <thead>
-                    <tr>
-                        <th>ID</th>
-                        <th>Email</th>
-                        <th>Roles</th>
-                        <th>Acciones</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for user in all_users %}
-                    <tr>
-                        <td>{{ user.id }}</td>
-                        <td>{{ user.email }}</td>
-                        <td>
-                            {% for role in user.roles %}
-                            {{ role.name }} (ID: {{ role.id }})<br>
-                            {% endfor %}
-                        </td>
-                        <td>
-                            <a href="#" class="btn btn-sm btn-primary">Editar</a>
-                            <a href="#" class="btn btn-sm btn-danger">Eliminar</a>
-                        </td>
-                    </tr>
+        <ul class="list-group">
+            {% for user in users %}  {# Use 'users' instead of 'all_users' #}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ user.email }}</strong><br>
+                    ID: {{ user.id }}<br>
+                    Roles:
+                    {% for role in user.roles %}
+                    <span class="badge bg-secondary mx-1">{{ role.name }}</span>
                     {% endfor %}
-                </tbody>
-            </table>
+                </div>
+                <div>
+                    <a href="#" class="btn btn-sm btn-primary mx-1" style="width: 80px; display: inline-block;">Editar</a>
+                    <a href="#" class="btn btn-sm btn-danger mx-1" style="width: 80px; display: inline-block;">Eliminar</a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
+
+        <div class="mt-4 d-flex justify-content-center">  {# Pagination links #}
+            {% if users.has_other_pages %}
+            <ul class="pagination">
+                {% if users.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ users.previous_page_number }}">Anterior</a></li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+                {% endif %}
+                {% for i in users.paginator.page_range %}
+                {% if users.number == i %}
+                <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                {% endif %}
+                {% endfor %}
+                {% if users.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ users.next_page_number }}">Siguiente</a></li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+                {% endif %}
+            </ul>
+            {% endif %}
         </div>
     </div>
 
-    <div class="text-center py-4">
-        <p class="text-muted" style="font-size: 0.9rem;">Powered by Smartis AI</p>
-    </div>
 </div>
 
 <style>

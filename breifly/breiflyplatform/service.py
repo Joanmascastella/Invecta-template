@@ -23,10 +23,8 @@ def get_current_user():
         session = supabase.auth.get_session()
         if session:
             user = session.user
-            print(f"Supabase Response: user={user} session={session}")
             return user
         else:
-            print("No active session.")
             return None
     except Exception as e:
         print(f"Error getting user: {e}")

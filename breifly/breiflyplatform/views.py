@@ -37,7 +37,6 @@ def landing_page(request):
                 return redirect('/login')
 
             user_id = user_data.id
-            print(f"User ID: {user_id}, Roles: {roles}")
 
             if 'user' in roles:
                 return render(request, 'main_page.html', {
@@ -110,13 +109,25 @@ def user_management_page(request):
             if "admin" in roles: 
                  # Get all users from database
                 all_users = get_all_users(request=request)
+
+                # Pagination
+                paginator = Paginator(all_users, 5)  # Show 5 users per page
+                page = request.GET.get('page')
+
+                try:
+                    users = paginator.page(page)
+                except PageNotAnInteger:
+                    users = paginator.page(1)
+                except EmptyPage:
+                    users = paginator.page(paginator.num_pages)
+
                 return render(request, 'user_management.html', {
                     'title': 'Invecta - User Management',
                     'user_authenticated': user_authenticated,
                     'user': user_data,
                     'roles': roles,
                     'navbar_partial': 'partials/admin_authenticated_navbar.html',
-                    'all_users': all_users,
+                    'users': users,  # Pass paginated users
                 }) 
             else:
                 request.session.flush()
@@ -127,7 +138,7 @@ def user_management_page(request):
     except Exception as e:
         if wants_json_response(request):
             return JsonResponse({'error': str(e)}, status=500)
-        return render(request, '404.html', status=500) 
+        return render(request, '404.html', status=500)
 
 def item_management_page(request):
     try:
