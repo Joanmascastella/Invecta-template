@@ -133,7 +133,7 @@ def user_management_page(request):
                     'user': user_data,
                     'roles': roles,
                     'navbar_partial': 'partials/admin_authenticated_navbar.html',
-                    'users': users,  # Pass paginated users
+                    'users': users,  
                 }) 
             else:
                 request.session.flush()
@@ -166,7 +166,7 @@ def item_management_page(request):
                 all_items = get_all_items(request=request)  # Now returns a QuerySet
 
                 # Pagination
-                paginator = Paginator(all_items, 5)  # Show 5 items per page
+                paginator = Paginator(all_items, 5)  
                 page = request.GET.get('page')
 
                 try:

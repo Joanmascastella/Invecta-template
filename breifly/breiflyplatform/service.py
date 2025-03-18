@@ -117,7 +117,9 @@ def get_all_items(request):
     user_roles = UserRole.objects.filter(user_id=user_id).select_related('role')
     roles = [user_role.role.name for user_role in user_roles]
     if "admin" in roles:
-        return Item.objects.order_by('id')
+        item_data = []
+        item_data = Item.objects.order_by('provider')
+        return item_data
     else:
         if wants_json_response(request):
             return JsonResponse({'error': 'Not authorized'}, status=403)
