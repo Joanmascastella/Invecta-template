@@ -1,38 +1,53 @@
 {% include 'header.html' %}
 
-<div class="container mt-4">
+<div class="bg-light min-vh-100 d-flex flex-column">
+    <div class="container py-6 flex-grow-1 d-flex flex-column">
+        <h1 class="mb-5 text-center" style="font-size: 2.8rem; font-weight: 500;">Gestionar Usuarios</h1>
 
-    <h1 class="mt-4">Gestionar Usuarios</h1>
+        <div class="d-flex justify-content-center mb-5">
+            <a href="{% url 'admin' %}" class="btn btn-primary btn-lg px-5 py-3 rounded-pill shadow-sm border" style="font-size: 1.2rem; transition: transform 0.2s ease-in-out;">
+                Página Anterior
+            </a>
+        </div>
 
-    <div class="row mt-4">
-        <div class="col-md-6 mb-3">
-            <a href="#" class="btn btn-primary btn-lg btn-block">Pagina anterior</a>
+        <div class="table-responsive flex-grow-1">
+            <table class="table table-striped">
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Email</th>
+                        <th>Roles</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in all_users %}
+                    <tr>
+                        <td>{{ user.id }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>
+                            {% for role in user.roles %}
+                            {{ role.name }} (ID: {{ role.id }})<br>
+                            {% endfor %}
+                        </td>
+                        <td>
+                            <a href="#" class="btn btn-sm btn-primary">Editar</a>
+                            <a href="#" class="btn btn-sm btn-danger">Eliminar</a>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
         </div>
     </div>
 
-    <h3 class="mt-4">Usuarios</h3>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>ID</th>
-                    <th>Email</th>
-                    <th>Roles</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for user in all_users %}
-                <tr>
-                    <td>{{ user.id }}</td>
-                    <td>{{ user.email }}</td>
-                    <td>
-                        {% for role in user.roles %}
-                        {{ role.name }} (ID: {{ role.id }})<br>
-                        {% endfor %}
-                    </td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+    <div class="text-center py-4">
+        <p class="text-muted" style="font-size: 0.9rem;">Powered by Smartis AI</p>
     </div>
 </div>
+
+<style>
+    .btn:hover {
+        transform: translateY(-3px);
+    }
+</style>

@@ -75,24 +75,14 @@ def admin_page(request):
                     return JsonResponse({'error': 'Not authenticated'}, status=401)
                 return redirect('/login')
             
-
-            
             # Check the role of the user to verify it's an admin
             if "admin" in roles: 
-                 # Get all users from database
-                all_users = get_all_users(request=request)
-                # Get items from database
-                all_items = get_all_items(request=request)
-                print(f"all items {all_items}")
-                print(f"all users {all_users}")
                 return render(request, 'admin_dashboard.html', {
                     'title': 'Invecta - Admin',
                     'user_authenticated': user_authenticated,
                     'user': user_data,
                     'roles': roles,
                     'navbar_partial': 'partials/admin_authenticated_navbar.html',
-                    'all_users': all_users,
-                    'all_items': all_items,
                 }) 
             else:
                 request.session.flush()
@@ -105,6 +95,73 @@ def admin_page(request):
             return JsonResponse({'error': str(e)}, status=500)
         return render(request, '404.html', status=500) 
 
+def user_management_page(request):
+    try:
+        if request.method == "GET": 
+            user_authenticated, user_data, roles = get_role_by_id(request=request)
+
+            # Check if user is authenticated 
+            if not user_authenticated:
+                if wants_json_response(request):
+                    return JsonResponse({'error': 'Not authenticated'}, status=401)
+                return redirect('/login')
+            
+            # Check the role of the user to verify it's an admin
+            if "admin" in roles: 
+                 # Get all users from database
+                all_users = get_all_users(request=request)
+                return render(request, 'user_management.html', {
+                    'title': 'Invecta - User Management',
+                    'user_authenticated': user_authenticated,
+                    'user': user_data,
+                    'roles': roles,
+                    'navbar_partial': 'partials/admin_authenticated_navbar.html',
+                    'all_users': all_users,
+                }) 
+            else:
+                request.session.flush()
+                if wants_json_response(request):
+                    return JsonResponse({'error': 'Not authorized'}, status=403) 
+                return render(request, '404.html', status=403) 
+
+    except Exception as e:
+        if wants_json_response(request):
+            return JsonResponse({'error': str(e)}, status=500)
+        return render(request, '404.html', status=500) 
+
+def item_management_page(request):
+    try:
+        if request.method == "GET": 
+            user_authenticated, user_data, roles = get_role_by_id(request=request)
+
+            # Check if user is authenticated 
+            if not user_authenticated:
+                if wants_json_response(request):
+                    return JsonResponse({'error': 'Not authenticated'}, status=401)
+                return redirect('/login')
+            
+            # Check the role of the user to verify it's an admin
+            if "admin" in roles: 
+                 # Get all users from database
+                all_items = get_all_items(request=request)
+                return render(request, 'stock_management.html', {
+                    'title': 'Invecta - Item Management',
+                    'user_authenticated': user_authenticated,
+                    'user': user_data,
+                    'roles': roles,
+                    'navbar_partial': 'partials/admin_authenticated_navbar.html',
+                    'all_items': all_items,
+                }) 
+            else:
+                request.session.flush()
+                if wants_json_response(request):
+                    return JsonResponse({'error': 'Not authorized'}, status=403) 
+                return render(request, '404.html', status=403) 
+
+    except Exception as e:
+        if wants_json_response(request):
+            return JsonResponse({'error': str(e)}, status=500)
+        return render(request, '404.html', status=500) 
 
 # --------------------------------
 # Error View
