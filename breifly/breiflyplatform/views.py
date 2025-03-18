@@ -54,7 +54,7 @@ def landing_page(request):
                     return JsonResponse({'error': 'Not authenticated'}, status=401)
                 return redirect('/login')
 
-            user_id = "bc188b4b-bd9b-48b6-a5ad-74f3555ffe08"
+            user_id = user_data.id
             user_roles = UserRole.objects.filter(user_id=user_id).select_related('role')
             roles = [user_role.role.name for user_role in user_roles]
             user = get_current_user()
