@@ -23,6 +23,10 @@ logger = logging.getLogger(__name__)
 # User - Pages
 # --------------------------------
 def landing_page(request):
+    """
+    Initial page that is accessed. If no user is logged in then user is redirected
+    to login page. If logged in it checks the role of the user to redirect them to the correct page. 
+    """
     try:
         if request.method == 'GET':
             user_authenticated, user_data, roles = get_role_by_id(request)
@@ -51,18 +55,50 @@ def landing_page(request):
                 return redirect('/custom-admin/dashboard/')
             else:
                 if wants_json_response(request):
-                    return JsonResponse({'error': 'Role not allowed'}, status=403)
-                return redirect('/error/page/')
+                    return JsonResponse({'error': str(e)}, status=500)
+                return render(request, '404.html', status=500) 
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        if wants_json_response(request):
+            return JsonResponse({'error': str(e)}, status=500)
+        return render(request, '404.html', status=500) 
+
 
 
 # --------------------------------
 # Admin View
 # --------------------------------
 def admin_page(request):
-    
-    return
+    try:
+        if request.method == "GET": 
+            user_authenticated, user_data, roles = get_role_by_id(request=request)
+
+            # Check if user is authenticated 
+            if not user_authenticated:
+                if wants_json_response(request):
+                    return JsonResponse({'error': 'Not authenticated'}, status=401)
+                return redirect('/login')
+            
+            # Check the role of the user to verify it's an admin
+            if "admin" in roles: 
+                context = {
+                    'title': 'Invecta - Admin',
+                    'user_authenticated': user_authenticated,
+                    'user': user_data,
+                    'roles': roles,
+                    'navbar_partial': 'partials/admin_authenticated_navbar.html',
+                    'LANGUAGES': settings.LANGUAGES,
+                }
+                return render(request, 'admin_dashboard.html') 
+            else:
+                request.session.flush()
+                if wants_json_response(request):
+                    return JsonResponse({'error': 'Not authorized'}, status=403) 
+                return render(request, '404.html', status=403) 
+
+    except Exception as e:
+        if wants_json_response(request):
+            return JsonResponse({'error': str(e)}, status=500)
+        return render(request, '404.html', status=500) 
 
 
 # --------------------------------
@@ -75,7 +111,9 @@ def error_page(request):
     try:
         return render(request, '404.html')
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        if wants_json_response(request):
+            return JsonResponse({'error': str(e)}, status=500)
+        return render(request, '404.html', status=500) 
 
 
 # --------------------------------
@@ -83,6 +121,11 @@ def error_page(request):
 # --------------------------------
 @csrf_protect
 def login_view(request):
+    """
+    Renders login page.
+    
+    Handles POST requests to login user. 
+    """
     try:
         if request.method == 'GET':
             return render(request, 'loginForm.html', {
@@ -95,7 +138,9 @@ def login_view(request):
 
         return JsonResponse({'error': 'Invalid request method'}, status=405)
     except Exception as e:
-        return JsonResponse({'error': f'Internal server error: {str(e)}'}, status=500)
+        if wants_json_response(request):
+            return JsonResponse({'error': str(e)}, status=500)
+        return render(request, '404.html', status=500) 
 
 def logout_view(request):
     """
@@ -106,5 +151,7 @@ def logout_view(request):
             request.session.flush()
         return redirect('/login/')
     except Exception as e:
-        return JsonResponse({'error': str(e)}, status=500)
+        if wants_json_response(request):
+            return JsonResponse({'error': str(e)}, status=500)
+        return render(request, '404.html', status=500) 
 
