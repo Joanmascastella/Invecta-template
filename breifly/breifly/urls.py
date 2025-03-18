@@ -11,6 +11,7 @@ urlpatterns = [
     path('custom-admin/dashboard/users', views.user_management_page, name='user_management_page'),
     path('custom-admin/dashboard/items', views.item_management_page, name='item_management_page'),
     path('delete-user/<uuid:id>/', views.user_management_page, name='delete_user'),
+    path('update-user/<uuid:id>/', views.user_management_page, name='delete_user'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout_view'),
     path('error/page/', views.error_page, name="error_page"),

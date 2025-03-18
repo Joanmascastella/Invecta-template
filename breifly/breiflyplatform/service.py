@@ -172,3 +172,41 @@ def delete_user(id):
             return JsonResponse({'error': 'User does not exist'}, status=404)
     else:
         return JsonResponse({'error': 'Not authorized'}, status=403)
+    
+def update_role(request, id):
+    """
+    Updates the user's role (using integer IDs for roles).
+    """
+    user = get_current_user()
+    if not user:
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+
+    user_id = user.id
+    user_roles = UserRole.objects.filter(user_id=user_id).select_related('role')
+    roles = [user_role.role.name for user_role in user_roles]
+
+    if "admin" in roles:
+        try:
+            
+            data = json.loads(request.body)
+            user_to_update = User.objects.get(id=id)
+            new_role_name = sanitize(data.get('new_role'))
+
+            if new_role_name not in ['user', 'admin']:
+                return JsonResponse({'error': 'Invalid role provided'}, status=400)
+
+            new_role_id = 1 if new_role_name == 'admin' else 2  
+
+            # Delete existing UserRoles and create the new one
+            UserRole.objects.filter(user_id=user_to_update.id).delete()
+            UserRole.objects.create(user_id=user_to_update.id, role_id=new_role_id) 
+
+            return JsonResponse({'message': 'User role updated successfully'})
+        except User.DoesNotExist:
+            return JsonResponse({'error': 'User does not exist'}, status=404)
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Not authorized'}, status=403)
