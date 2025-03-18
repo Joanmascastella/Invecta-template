@@ -15,6 +15,7 @@ urlpatterns = [
 urlpatterns += i18n_patterns(
     path('', views.landing_page, name='home'),
     path('home/', views.landing_page, name='home'),
+    path('custom-admin/dashboard/', views.admin_page, name='admin'),
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout_view'),
     path('error/page/', views.error_page, name="error_page"),
