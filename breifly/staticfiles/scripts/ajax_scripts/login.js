@@ -1,3 +1,7 @@
+function getCSRFToken() {
+    return document.querySelector('meta[name="csrf-token"]').getAttribute('content');
+}
+
 async function loginViaJSON() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
@@ -10,7 +14,7 @@ async function loginViaJSON() {
             method: "POST",
             headers: {
                 "Content-Type": "application/json",
-                "X-CSRFToken": document.querySelector('[name=csrfmiddlewaretoken]').value,
+                "X-CSRFToken": getCSRFToken(),
             },
             body: JSON.stringify({ email, password }),
         });

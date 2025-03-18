@@ -14,7 +14,9 @@ from .supabase_client import supabase
 from .helper_functions import get_access_token, sanitize, wants_json_response
 from .models import (
     UserRole,
-    User
+    User,
+    Item,
+    PreviousOffer
 )
 import csv
 import os
@@ -65,9 +67,7 @@ def error_page(request):
     Renders a generic error (404) page.
     """
     try:
-        user_authenticated, user_data = get_access_token(request)
-        new_user_status = 'false'
-        roles = []
+        user_data = get_access_token(request)
 
         if user_data:
             user_id = user_data.id
@@ -87,7 +87,7 @@ def login_view(request):
     try:
         if request.method == 'GET':
             return render(request, 'loginForm.html', {
-                'title': 'Briefly - Login',
+                'title': 'Invecta - Login',
                 'navbar_partial': 'partials/not_authenticated_navbar.html'
             })
 
