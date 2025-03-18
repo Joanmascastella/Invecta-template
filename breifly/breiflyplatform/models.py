@@ -41,6 +41,7 @@ class Item(models.Model):
     provider = models.TextField(blank=True, null=True)
     name = models.TextField()
     category = models.TextField(blank=True, null=True)
+    price = models.FloatField(blank=True, null=True)
 
     class Meta:
         db_table = 'items'

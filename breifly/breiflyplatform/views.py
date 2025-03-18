@@ -75,8 +75,10 @@ def admin_page(request):
                     return JsonResponse({'error': 'Not authenticated'}, status=401)
                 return redirect('/login')
             
+            # Get all users from database
+
             # Get items from database
-            
+
             
             # Check the role of the user to verify it's an admin
             if "admin" in roles: 
