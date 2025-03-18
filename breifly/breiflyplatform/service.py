@@ -111,23 +111,13 @@ def get_all_items(request):
         if wants_json_response(request):
             return JsonResponse({'error': 'Unauthorized'}, status=401)
         else:
-            return render(request, '401.html', status=401)
+            return render(request, '404.html', status=401)
 
     user_id = user.id
     user_roles = UserRole.objects.filter(user_id=user_id).select_related('role')
     roles = [user_role.role.name for user_role in user_roles]
     if "admin" in roles:
-        all_items = Item.objects.all()
-        item_data = []
-        for item in all_items:
-            item_data.append({
-                "serial_number": item.serial_number,
-                "provider": item.provider,
-                "name": item.name,
-                "category": item.category,
-                "price": float(item.price),  
-            })
-        return item_data
+        return Item.objects.order_by('id')
     else:
         if wants_json_response(request):
             return JsonResponse({'error': 'Not authorized'}, status=403)

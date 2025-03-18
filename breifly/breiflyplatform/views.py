@@ -162,9 +162,8 @@ def item_management_page(request):
                 return redirect('/login')
             
             # Check the role of the user to verify it's an admin
-            if "admin" in roles: 
-                 # Get all items from database
-                all_items = get_all_items(request=request)
+            if "admin" in roles:
+                all_items = get_all_items(request=request)  # Now returns a QuerySet
 
                 # Pagination
                 paginator = Paginator(all_items, 5)  # Show 5 items per page
@@ -183,8 +182,8 @@ def item_management_page(request):
                     'user': user_data,
                     'roles': roles,
                     'navbar_partial': 'partials/admin_authenticated_navbar.html',
-                    'items': items,  # Pass paginated items
-                }) 
+                    'items': items,
+                })
             else:
                 request.session.flush()
                 if wants_json_response(request):
