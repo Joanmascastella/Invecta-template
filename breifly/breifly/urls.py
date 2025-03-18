@@ -4,7 +4,7 @@ from django.urls import path, include
 from django.conf.urls.i18n import i18n_patterns
 import breiflyplatform.views as views
 from django.conf.urls.i18n import set_language
-
+import breiflyplatform.error_handlers as error_handler # this is correct
 # Base URL patterns
 urlpatterns = [
     path('i18n/setlang/', set_language, name='set_language'),  # Language switching
@@ -23,7 +23,11 @@ urlpatterns += i18n_patterns(
     prefix_default_language=True,
 )
 
-
 # Static file serving
 if settings.DEBUG:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
+
+# ...
+handler404 = 'breiflyplatform.error_handlers.custom_page_not_found_view'
+handler500 = 'breiflyplatform.error_handlers.custom_error_view'
+handler400 = 'breiflyplatform.error_handlers.custom_bad_request_view'
