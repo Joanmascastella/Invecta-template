@@ -75,19 +75,24 @@ def admin_page(request):
                     return JsonResponse({'error': 'Not authenticated'}, status=401)
                 return redirect('/login')
             
-            # Get all users from database
-
-            # Get items from database
 
             
             # Check the role of the user to verify it's an admin
             if "admin" in roles: 
+                 # Get all users from database
+                all_users = get_all_users(request=request)
+                # Get items from database
+                all_items = get_all_items(request=request)
+                print(f"all items {all_items}")
+                print(f"all users {all_users}")
                 return render(request, 'admin_dashboard.html', {
                     'title': 'Invecta - Admin',
                     'user_authenticated': user_authenticated,
                     'user': user_data,
                     'roles': roles,
                     'navbar_partial': 'partials/admin_authenticated_navbar.html',
+                    'all_users': all_users,
+                    'all_items': all_items,
                 }) 
             else:
                 request.session.flush()

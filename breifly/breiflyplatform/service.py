@@ -6,6 +6,8 @@ from .models import (
     Item,
     PreviousOffer
 )
+from django.http import HttpResponse
+from django.shortcuts import render, redirect
 from django.http import JsonResponse
 import datetime
 import csv
@@ -39,11 +41,12 @@ def get_role_by_id(request):
     # Get the name of the role
     roles = [user_role.role.name for user_role in user_roles]
     return user_authenticated, user_data, roles, 
-    
+
+
+
 # --------------------------------
 # Login Service
 # --------------------------------
-
 def perform_login(request, email, password):
     try:
         response = supabase.auth.sign_in_with_password({"email": email, "password": password})
@@ -73,3 +76,62 @@ def process_login_request(request):
         return JsonResponse({'error': 'Email and password are required'}, status=400)
 
     return perform_login(request, email, password)
+
+# --------------------------------
+# Admin Service
+# --------------------------------
+def get_all_users(request):
+    # Check the role of the user
+    user = get_current_user()
+    user_id = user.id
+    user_roles = UserRole.objects.filter(user_id=user_id).select_related('role')
+    roles = [user_role.role.name for user_role in user_roles]
+    if "admin" in roles:
+            all_users = User.objects.all()
+            user_data = []
+
+            for u in all_users:
+                user_roles_data = UserRole.objects.filter(user_id=u.id).select_related('role')
+                roles_data = [{"id": ur.role.id, "name": ur.role.name} for ur in user_roles_data]
+                user_data.append({
+                    "id": u.id,
+                    "email": u.email,
+                    "roles": roles_data,
+                })
+            return user_data
+    else:
+        request.session.flush()
+        if wants_json_response(request):
+            return JsonResponse({'error': 'Not authorized'}, status=403) 
+        return render(request, '404.html', status=403) 
+
+
+def get_all_items(request):
+    # Check the role of the user
+    user = get_current_user()
+    if not user:
+        if wants_json_response(request):
+            return JsonResponse({'error': 'Unauthorized'}, status=401)
+        else:
+            return render(request, '401.html', status=401)
+
+    user_id = user.id
+    user_roles = UserRole.objects.filter(user_id=user_id).select_related('role')
+    roles = [user_role.role.name for user_role in user_roles]
+    if "admin" in roles:
+        all_items = Item.objects.all()
+        item_data = []
+        for item in all_items:
+            item_data.append({
+                "serial_number": item.serial_number,
+                "provider": item.provider,
+                "name": item.name,
+                "category": item.category,
+                "price": float(item.price),  
+            })
+        return item_data
+    else:
+        if wants_json_response(request):
+            return JsonResponse({'error': 'Not authorized'}, status=403)
+        else:
+            return render(request, '404.html', status=403)

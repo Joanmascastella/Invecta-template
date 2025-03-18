@@ -1,0 +1,38 @@
+{% include 'header.html' %}
+
+<div class="container mt-4">
+
+    <h1 class="mt-4">Gestionar Artículos</h1>
+
+    <div class="row mt-4">
+        <div class="col-md-6 mb-3">
+            <a href="#" class="btn btn-primary btn-lg btn-block">Pagina anterior</a>
+        </div>
+    </div>
+
+    <h3 class="mt-4">Artículos</h3>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Número de Serie</th>
+                    <th>Proveedor</th>
+                    <th>Nombre</th>
+                    <th>Categoría</th>
+                    <th>Precio</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in all_items %}
+                <tr>
+                    <td>{{ item.serial_number }}</td>
+                    <td>{{ item.provider }}</td>
+                    <td>{{ item.name }}</td>
+                    <td>{{ item.category }}</td>
+                    <td>{{ item.price }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>

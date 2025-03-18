@@ -1,0 +1,38 @@
+{% include 'header.html' %}
+
+<div class="container mt-4">
+
+    <h1 class="mt-4">Gestionar Usuarios</h1>
+
+    <div class="row mt-4">
+        <div class="col-md-6 mb-3">
+            <a href="#" class="btn btn-primary btn-lg btn-block">Pagina anterior</a>
+        </div>
+    </div>
+
+    <h3 class="mt-4">Usuarios</h3>
+    <div class="table-responsive">
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Email</th>
+                    <th>Roles</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in all_users %}
+                <tr>
+                    <td>{{ user.id }}</td>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {% for role in user.roles %}
+                        {{ role.name }} (ID: {{ role.id }})<br>
+                        {% endfor %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
