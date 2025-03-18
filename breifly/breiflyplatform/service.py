@@ -118,7 +118,6 @@ def get_all_users(request):
             return JsonResponse({'error': 'Not authorized'}, status=403) 
         return render(request, '404.html', status=403) 
 
-
 def get_all_items(request):
     """
     Gets all items.
@@ -139,6 +138,7 @@ def get_all_items(request):
         all_items = Item.objects.order_by('serial_number')
         for i in all_items:
             item_data.append({
+                'item_id': i.id,
                 'serial_number': i.serial_number,
                 'provider': i.provider,
                 'name': i.name,
@@ -152,6 +152,9 @@ def get_all_items(request):
         else:
             return render(request, '404.html', status=403)
 
+# --------------------------------
+# User Management
+# --------------------------------
 def delete_user(id):
     """
     Deletes a user by id. 
@@ -206,6 +209,34 @@ def update_role(request, id):
             return JsonResponse({'error': 'User does not exist'}, status=404)
         except json.JSONDecodeError:
             return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+
+
+# --------------------------------
+# Item Management
+# --------------------------------
+def delete_item(id):
+    """
+    Deletes an item by id.
+    """
+    user = get_current_user()  
+    if not user:
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+
+    user_id = user.id
+    user_roles = UserRole.objects.filter(user_id=user_id).select_related('role')
+    roles = [user_role.role.name for user_role in user_roles]
+
+    if "admin" in roles:
+        try:
+            item = Item.objects.get(id=id)
+            item.delete()
+            return JsonResponse({'message': 'Item deleted successfully'})
+        except Item.DoesNotExist:
+            return JsonResponse({'error': 'Item does not exist'}, status=404)
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=500)
     else:

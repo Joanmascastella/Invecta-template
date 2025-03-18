@@ -91,6 +91,8 @@ def admin_page(request):
                 if wants_json_response(request):
                     return JsonResponse({'error': 'Not authorized'}, status=403) 
                 return render(request, '404.html', status=403) 
+        
+       
 
     except Exception as e:
         if wants_json_response(request):
@@ -160,7 +162,7 @@ def user_management_page(request, id=None):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-def item_management_page(request):
+def item_management_page(request, id=None):
     """
     Item management page allowing users to edit, add, view and delete stock items. 
     """
@@ -201,7 +203,16 @@ def item_management_page(request):
                 if wants_json_response(request):
                     return JsonResponse({'error': 'Not authorized'}, status=403) 
                 return render(request, '404.html', status=403) 
-
+            
+        elif request.method == "DELETE":
+            user_authenticated, user_data, roles = get_role_by_id(request=request)
+            if not user_authenticated:
+                return JsonResponse({'error': 'Not authenticated'}, status=401)
+            if "admin" in roles:
+                response = delete_item(id=id)
+                return response
+            else:
+                return JsonResponse({'error': 'Not authorized'}, status=403)
     except Exception as e:
         if wants_json_response(request):
             return JsonResponse({'error': str(e)}, status=500)
