@@ -33,7 +33,6 @@ MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
@@ -48,7 +47,7 @@ ROOT_URLCONF = "breifly.urls"
 TEMPLATES = [
     {
         "BACKEND": "django.template.backends.django.DjangoTemplates",
-        "DIRS": [BASE_DIR / "templates"], 
+        "DIRS": [BASE_DIR / "templates"],
         "APP_DIRS": True,
         "OPTIONS": {
             "context_processors": [
@@ -74,25 +73,12 @@ SUPABASE_URL = os.environ.get("SUPABASE_URL", "https://your-default-url.supabase
 SUPABASE_KEY = os.environ.get("SUPABASE_KEY", "your-default-api-key")
 
 # Internationalization
-LANGUAGE_CODE = "en-us"
+LANGUAGE_CODE = "es"
 TIME_ZONE = "UTC"
 USE_I18N = True
 USE_L10N = True
 USE_TZ = True
 
-# Supported languages
-LANGUAGES = [
-    ('en-us', 'English'),
-    ('es', 'Spanish'),
-    ('fr', 'French'),
-    ('de', 'German'),
-    ('it', 'Italian'),
-]
-
-# Path to translation files
-LOCALE_PATHS = [
-    BASE_DIR / "locale",
-]
 
 # Media files settings (for CSV storage)
 MEDIA_URL = "/media/"

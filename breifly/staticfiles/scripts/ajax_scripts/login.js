@@ -6,8 +6,8 @@ async function loginViaJSON() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
 
-    const languagePrefix = window.location.pathname.split('/')[1];
-    const loginURL = `/${languagePrefix}/login/`;
+    const loginURL = `/login/`;
+    const redirect_url = `/home/`;
 
     try {
         const response = await fetch(loginURL, {
@@ -33,7 +33,7 @@ async function loginViaJSON() {
             if (response.ok && data.success) {
                 showMessage("Login successful!", "success");
                 setTimeout(() => {
-                    window.location.href = data.redirect_url || "/home/";
+                    window.location.href = redirect_url;
                 }, 1000);
             } else {
                 const err = data.error || "Invalid credentials.";

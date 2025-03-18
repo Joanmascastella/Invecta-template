@@ -6,9 +6,8 @@ async function loginViaJSON() {
     const email = document.getElementById("email").value.trim();
     const password = document.getElementById("password").value.trim();
 
-    const languagePrefix = window.location.pathname.split('/')[1];
-    const loginURL = `/${languagePrefix}/login/`;
-    const redirect_url = `/en-us/home/`;
+    const loginURL = `/login/`;
+    const redirect_url = `/home/`;
 
     try {
         const response = await fetch(loginURL, {
