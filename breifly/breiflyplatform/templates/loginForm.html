@@ -121,7 +121,7 @@
 
     .image-container {
         flex: 1;
-        background-image: url("{% static 'assets/images/campaign-creators-yktK2qaiVHI-unsplash.jpg' %}");
+        background-image: url("{% static 'assets/images/samantha-gades-BlIhVfXbi9s-unsplash.jpg' %}");
         background-size: cover;
         background-position: center;
         display: flex;
@@ -147,22 +147,21 @@
     <!-- Left Container: Login Form -->
     <div class="form-container">
         <div class="login-form">
-            <h2>{% trans "Welcome back" %}</h2>
-            <p>{% trans "Please enter your details." %}</p>
-            <label for="email" class="form-label">{% trans "Email" %}</label>
-            <input type="email" class="form-control" id="email" placeholder="{% trans 'Enter your email' %}" required>
+            <h2>{% trans "Bienvenido de nuevo." %}</h2>
+            <p>{% trans "Por favor ingresa tus datos." %}</p>
+            <label for="email" class="form-label">{% trans "Correo electrónico" %}</label>
+            <input type="email" class="form-control" id="email" placeholder="{% trans 'Introduce tu correo electrónico' %}" required>
             
-            <label for="password" class="form-label">{% trans "Password" %}</label>
-            <input type="password" class="form-control" id="password" placeholder="{% trans 'Enter your password' %}" required>
+            <label for="password" class="form-label">{% trans "Contraseña" %}</label>
+            <input type="password" class="form-control" id="password" placeholder="{% trans 'Introduce tu contraseña' %}" required>
             
-            <button class="btn-primary" type="button" onclick="loginViaJSON()">{% trans "Sign In" %}</button>
+            <button class="btn-primary" type="button" onclick="loginViaJSON()">{% trans "Iniciar sesión" %}</button>
             
             <!-- Reusable stylized message box (Bootstrap Alert) -->
             <div id="messageBox" class="alert d-none" role="alert"></div>
 
 {#            <div class="form-footer">#}
-{#                <a href="#">{% trans "Forgot Password?" %}</a>#}
-{#                <a href="#">{% trans "Register here" %}</a>#}
+{#                <a href="#">{% trans "¿Has olvidado tu contraseña?" %}</a>#}
 {#            </div>#}
         </div>
     </div>

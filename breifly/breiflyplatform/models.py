@@ -10,7 +10,6 @@ class User(models.Model):
         db_table = '"auth"."users"'
         managed = False  # Prevent Django from managing this table
 
-
 # Roles Model
 class Role(models.Model):
     id = models.AutoField(primary_key=True)
