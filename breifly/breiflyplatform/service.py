@@ -241,3 +241,41 @@ def delete_item(id):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Not authorized'}, status=403)
+
+
+def update_item(request, id):
+    user = get_current_user()
+    if not user:
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+
+    user_id = user.id
+    user_roles = UserRole.objects.filter(user_id=user_id).select_related('role')
+    roles = [user_role.role.name for user_role in user_roles]
+
+    if "admin" in roles:
+        try:
+            data = json.loads(request.body)
+
+            # Delete the existing item
+            Item.objects.filter(id=id).delete()
+
+            # Create a new item with the updated data
+            Item.objects.create(
+                id=id, # use id not item_id
+                serial_number=data.get('serial_number', ''),
+                provider=data.get('provider', ''),
+                name=data.get('name', ''),
+                category=data.get('category', ''),
+                price=float(data.get('price', 0)) if data.get('price') not in [None, ''] else 0,
+            )
+
+            return JsonResponse({'message': 'Item updated successfully'})
+
+        except json.JSONDecodeError:
+            return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+        except (ValueError, TypeError):  # Handle price conversion errors
+            return JsonResponse({'error': 'Invalid price format'}, status=400)
+        except Exception as e:
+            return JsonResponse({'error': str(e)}, status=500)
+    else:
+        return JsonResponse({'error': 'Not authorized'}, status=403)

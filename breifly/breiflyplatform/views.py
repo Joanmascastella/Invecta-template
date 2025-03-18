@@ -164,55 +164,59 @@ def user_management_page(request, id=None):
 
 def item_management_page(request, id=None):
     """
-    Item management page allowing users to edit, add, view and delete stock items. 
+    Item management page allowing users to edit, add, view and delete stock items.
+    Handles GET, PUT, and DELETE requests.
     """
     try:
-        if request.method == "GET": 
-            user_authenticated, user_data, roles = get_role_by_id(request=request)
+        user_authenticated, user_data, roles = get_role_by_id(request=request)
 
-            # Check if user is authenticated 
-            if not user_authenticated:
-                if wants_json_response(request):
-                    return JsonResponse({'error': 'Not authenticated'}, status=401)
-                return redirect('/login')
-            
-            # Check the role of the user to verify it's an admin
-            if "admin" in roles:
-                all_items = get_all_items(request=request)
-                # Pagination
-                paginator = Paginator(all_items, 5)  #
-                page = request.GET.get('page')
-
-                try:
-                    items = paginator.page(page)
-                except PageNotAnInteger:
-                    items = paginator.page(1)
-                except EmptyPage:
-                    items = paginator.page(paginator.num_pages)
-
-                return render(request, 'stock_management.html', {
-                    'title': 'Invecta - Stock Management',
-                    'user_authenticated': user_authenticated,
-                    'user': user_data,
-                    'roles': roles,
-                    'navbar_partial': 'partials/admin_authenticated_navbar.html',
-                    'items': items,
-                })
-            else:
-                request.session.flush()
-                if wants_json_response(request):
-                    return JsonResponse({'error': 'Not authorized'}, status=403) 
-                return render(request, '404.html', status=403) 
-            
-        elif request.method == "DELETE":
-            user_authenticated, user_data, roles = get_role_by_id(request=request)
-            if not user_authenticated:
+        if not user_authenticated:
+            if wants_json_response(request):
                 return JsonResponse({'error': 'Not authenticated'}, status=401)
-            if "admin" in roles:
-                response = delete_item(id=id)
-                return response
-            else:
+            return redirect('/login')
+
+        if "admin" not in roles:
+            request.session.flush()
+            if wants_json_response(request):
                 return JsonResponse({'error': 'Not authorized'}, status=403)
+            return render(request, '404.html', status=403)
+
+        if request.method == "GET":
+            all_items = get_all_items(request=request)
+            paginator = Paginator(all_items, 5)
+            page = request.GET.get('page')
+
+            try:
+                items = paginator.page(page)
+            except PageNotAnInteger:
+                items = paginator.page(1)
+            except EmptyPage:
+                items = paginator.page(paginator.num_pages)
+
+            return render(request, 'stock_management.html', {
+                'title': 'Invecta - Stock Management',
+                'user_authenticated': user_authenticated,
+                'user': user_data,
+                'roles': roles,
+                'navbar_partial': 'partials/admin_authenticated_navbar.html',
+                'items': items,
+            })
+
+        elif request.method == "PUT":
+            if id is None:
+                return JsonResponse({'error': 'Item ID is required for PUT requests'}, status=400)
+            response = update_item(request, id=id)
+            return response
+
+        elif request.method == "DELETE":
+            if id is None:
+                return JsonResponse({'error': 'Item ID is required for DELETE requests'}, status=400)
+            response = delete_item(id=id)
+            return response
+
+        else:
+            return JsonResponse({'error': 'Method not allowed'}, status=405)
+
     except Exception as e:
         if wants_json_response(request):
             return JsonResponse({'error': str(e)}, status=500)

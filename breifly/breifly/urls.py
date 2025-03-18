@@ -10,7 +10,8 @@ urlpatterns = [
     path('custom-admin/dashboard/', views.admin_page, name='admin'),
     path('custom-admin/dashboard/users', views.user_management_page, name='user_management_page'),
     path('custom-admin/dashboard/items', views.item_management_page, name='item_management_page'),
-    path('delete-items/<uuid:id>/', views.item_management_page, name='item_management_page'),
+    path('update-item/<uuid:id>/', views.item_management_page, name='update_item'),
+    path('delete-items/<uuid:id>/', views.item_management_page, name='delete_item'),
     path('delete-user/<uuid:id>/', views.user_management_page, name='delete_user'),
     path('update-user/<uuid:id>/', views.user_management_page, name='delete_user'),
 
