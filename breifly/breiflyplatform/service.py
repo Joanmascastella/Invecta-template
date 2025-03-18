@@ -19,6 +19,9 @@ logger = logging.getLogger(__name__)
 # User Service
 # --------------------------------
 def get_current_user():
+    """
+    Gets the current user from the active session 
+    """
     try:
         session = supabase.auth.get_session()
         if session:
@@ -31,6 +34,9 @@ def get_current_user():
         return None
 
 def get_role_by_id(request):
+    """
+    Gets the role of the user by id 
+    """
     user_authenticated, user_data = get_access_token(request)
 
     user_id = user_data.id
@@ -46,6 +52,9 @@ def get_role_by_id(request):
 # Login Service
 # --------------------------------
 def perform_login(request, email, password):
+    """
+    Performs login 
+    """
     try:
         response = supabase.auth.sign_in_with_password({"email": email, "password": password})
         if response.user:
@@ -62,6 +71,9 @@ def perform_login(request, email, password):
         return JsonResponse({'error': f'Authentication failed: {str(e)}'}, status=500)
 
 def process_login_request(request):
+    """
+    Processes login request 
+    """
     try:
         data = json.loads(request.body)
     except json.JSONDecodeError:
@@ -79,6 +91,9 @@ def process_login_request(request):
 # Admin Service
 # --------------------------------
 def get_all_users(request):
+    """
+    Gets all active users.
+    """
     # Check the role of the user
     user = get_current_user()
     user_id = user.id
@@ -105,6 +120,9 @@ def get_all_users(request):
 
 
 def get_all_items(request):
+    """
+    Gets all items.
+    """
     # Check the role of the user
     user = get_current_user()
     if not user:
@@ -134,8 +152,11 @@ def get_all_items(request):
         else:
             return render(request, '404.html', status=403)
 
-def delete_user(request, id):
-    user = get_current_user(request)
+def delete_user(id):
+    """
+    Deletes a user by id. 
+    """
+    user = get_current_user()
     if not user:
         return JsonResponse({'error': 'Unauthorized'}, status=401)
 

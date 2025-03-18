@@ -146,7 +146,7 @@ def user_management_page(request, id=None):
             if not user_authenticated:
                 return JsonResponse({'error': 'Not authenticated'}, status=401)
             if "admin" in roles:
-                response = delete_user(request=request, id=id)
+                response = delete_user(id=id)
                 return response
             else:
                 return JsonResponse({'error': 'Not authorized'}, status=403)
