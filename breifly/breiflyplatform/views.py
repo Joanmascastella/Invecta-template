@@ -40,16 +40,13 @@ def landing_page(request):
             print(f"User ID: {user_id}, Roles: {roles}")
 
             if 'user' in roles:
-                context = {
+                return render(request, 'main_page.html', {
                     'title': 'Briefly - Home',
                     'user_authenticated': user_authenticated,
                     'user': user_data,
                     'roles': roles,
                     'navbar_partial': 'partials/authenticated_navbar.html',
-                    'LANGUAGES': settings.LANGUAGES,
-
-                }
-                return render(request, 'main_page.html', context)
+                })
 
             elif 'admin' in roles:
                 return redirect('/custom-admin/dashboard/')
@@ -80,15 +77,13 @@ def admin_page(request):
             
             # Check the role of the user to verify it's an admin
             if "admin" in roles: 
-                context = {
+                return render(request, 'admin_dashboard.html', {
                     'title': 'Invecta - Admin',
                     'user_authenticated': user_authenticated,
                     'user': user_data,
                     'roles': roles,
                     'navbar_partial': 'partials/admin_authenticated_navbar.html',
-                    'LANGUAGES': settings.LANGUAGES,
-                }
-                return render(request, 'admin_dashboard.html') 
+                }) 
             else:
                 request.session.flush()
                 if wants_json_response(request):
