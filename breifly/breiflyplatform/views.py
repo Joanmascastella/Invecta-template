@@ -64,6 +64,9 @@ def landing_page(request):
 # Admin View
 # --------------------------------
 def admin_page(request):
+    """
+    Admin dashboard allowing users to navigate to user and stock management
+    """
     try:
         if request.method == "GET": 
             user_authenticated, user_data, roles = get_role_by_id(request=request)
@@ -95,6 +98,9 @@ def admin_page(request):
         return render(request, '404.html', status=500) 
 
 def user_management_page(request):
+    """
+    User Management page allowing users to edit users roles, and delete users 
+    """
     try:
         if request.method == "GET": 
             user_authenticated, user_data, roles = get_role_by_id(request=request)
@@ -140,7 +146,11 @@ def user_management_page(request):
             return JsonResponse({'error': str(e)}, status=500)
         return render(request, '404.html', status=500)
 
+
 def item_management_page(request):
+    """
+    Item management page allowing users to edit, add, view and delete stock items. 
+    """
     try:
         if request.method == "GET": 
             user_authenticated, user_data, roles = get_role_by_id(request=request)
@@ -153,15 +163,27 @@ def item_management_page(request):
             
             # Check the role of the user to verify it's an admin
             if "admin" in roles: 
-                 # Get all users from database
+                 # Get all items from database
                 all_items = get_all_items(request=request)
-                return render(request, 'stock_management.html', {
-                    'title': 'Invecta - Item Management',
+
+                # Pagination
+                paginator = Paginator(all_items, 5)  # Show 5 items per page
+                page = request.GET.get('page')
+
+                try:
+                    items = paginator.page(page)
+                except PageNotAnInteger:
+                    items = paginator.page(1)
+                except EmptyPage:
+                    items = paginator.page(paginator.num_pages)
+
+                return render(request, 'item_management.html', {
+                    'title': 'Invecta - Stock Management',
                     'user_authenticated': user_authenticated,
                     'user': user_data,
                     'roles': roles,
                     'navbar_partial': 'partials/admin_authenticated_navbar.html',
-                    'all_items': all_items,
+                    'items': items,  # Pass paginated items
                 }) 
             else:
                 request.session.flush()
@@ -172,7 +194,7 @@ def item_management_page(request):
     except Exception as e:
         if wants_json_response(request):
             return JsonResponse({'error': str(e)}, status=500)
-        return render(request, '404.html', status=500) 
+        return render(request, '404.html', status=500)
 
 # --------------------------------
 # Error View

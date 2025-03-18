@@ -1,38 +1,61 @@
 {% include 'header.html' %}
 
-<div class="container mt-4">
+<div class="min-vh-100 d-flex flex-column">
+    <div class="container py-5 flex-grow-1">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <a href="{% url 'admin' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                Página Anterior
+            </a>
+            <h1 class="text-center" style="font-size: 2.2rem; font-weight: 500;">Gestionar Artículos</h1>
+            <div></div>
+        </div>
 
-    <h1 class="mt-4">Gestionar Artículos</h1>
+        <ul class="list-group">
+            {% for item in items %}
+            <li class="list-group-item d-flex justify-content-between align-items-center">
+                <div>
+                    <strong>{{ item.name }}</strong><br>
+                    Número de Serie: {{ item.serial_number }}<br>
+                    Proveedor: {{ item.provider }}<br>
+                    Categoría: {{ item.category }}<br>
+                    Precio: {{ item.price }}
+                </div>
+                <div>
+                    <a href="#" class="btn btn-sm btn-primary mx-1" style="width: 80px; display: inline-block;">Editar</a>
+                    <a href="#" class="btn btn-sm btn-danger mx-1" style="width: 80px; display: inline-block;">Eliminar</a>
+                </div>
+            </li>
+            {% endfor %}
+        </ul>
 
-    <div class="row mt-4">
-        <div class="col-md-6 mb-3">
-            <a href="{% url 'admin' %}" class="btn btn-primary btn-lg btn-block">Pagina anterior</a>
+        <div class="mt-4 d-flex justify-content-center">
+            {% if items.has_other_pages %}
+            <ul class="pagination">
+                {% if items.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page={{ items.previous_page_number }}">Anterior</a></li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">Anterior</span></li>
+                {% endif %}
+                {% for i in items.paginator.page_range %}
+                {% if items.number == i %}
+                <li class="page-item active"><span class="page-link">{{ i }}</span></li>
+                {% else %}
+                <li class="page-item"><a class="page-link" href="?page={{ i }}">{{ i }}</a></li>
+                {% endif %}
+                {% endfor %}
+                {% if items.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ items.next_page_number }}">Siguiente</a></li>
+                {% else %}
+                <li class="page-item disabled"><span class="page-link">Siguiente</span></li>
+                {% endif %}
+            </ul>
+            {% endif %}
         </div>
     </div>
-
-    <h3 class="mt-4">Artículos</h3>
-    <div class="table-responsive">
-        <table class="table table-striped">
-            <thead>
-                <tr>
-                    <th>Número de Serie</th>
-                    <th>Proveedor</th>
-                    <th>Nombre</th>
-                    <th>Categoría</th>
-                    <th>Precio</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for item in all_items %}
-                <tr>
-                    <td>{{ item.serial_number }}</td>
-                    <td>{{ item.provider }}</td>
-                    <td>{{ item.name }}</td>
-                    <td>{{ item.category }}</td>
-                    <td>{{ item.price }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
-    </div>
 </div>
+
+<style>
+    .btn:hover {
+        transform: translateY(-3px);
+    }
+</style>
