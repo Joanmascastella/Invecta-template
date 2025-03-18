@@ -49,6 +49,7 @@ def landing_page(request):
                     'roles': roles,
                     'navbar_partial': 'partials/authenticated_navbar.html',
                     'LANGUAGES': settings.LANGUAGES,
+                    
                 }
                 return render(request, 'main_page.html', context)
 
@@ -62,12 +63,16 @@ def landing_page(request):
         return JsonResponse({'error': str(e)}, status=500)
 
 
+
+# --------------------------------
+# Error View
+# --------------------------------
 def error_page(request):
     """
     Renders a generic error (404) page.
     """
     try:
-        user_data = get_access_token(request)
+        user_authenticated, user_data = get_access_token(request)
 
         if user_data:
             user_id = user_data.id
