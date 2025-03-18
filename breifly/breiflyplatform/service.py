@@ -118,7 +118,15 @@ def get_all_items(request):
     roles = [user_role.role.name for user_role in user_roles]
     if "admin" in roles:
         item_data = []
-        item_data = Item.objects.order_by('provider')
+        all_items = Item.objects.order_by('serial_number')
+        for i in all_items:
+            item_data.append({
+                'serial_number': i.serial_number,
+                'provider': i.provider,
+                'name': i.name,
+                'category': i.category,
+                'price': i.price
+            })
         return item_data
     else:
         if wants_json_response(request):

@@ -163,10 +163,9 @@ def item_management_page(request):
             
             # Check the role of the user to verify it's an admin
             if "admin" in roles:
-                all_items = get_all_items(request=request)  # Now returns a QuerySet
-
+                all_items = get_all_items(request=request)
                 # Pagination
-                paginator = Paginator(all_items, 5)  
+                paginator = Paginator(all_items, 5)  #
                 page = request.GET.get('page')
 
                 try:
@@ -176,7 +175,7 @@ def item_management_page(request):
                 except EmptyPage:
                     items = paginator.page(paginator.num_pages)
 
-                return render(request, 'item_management.html', {
+                return render(request, 'stock_management.html', {
                     'title': 'Invecta - Stock Management',
                     'user_authenticated': user_authenticated,
                     'user': user_data,
