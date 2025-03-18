@@ -8,7 +8,7 @@ from .models import (
 )
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponseNotFound, HttpResponseForbidden
 import datetime
 import csv
 import logging
@@ -133,3 +133,21 @@ def get_all_items(request):
             return JsonResponse({'error': 'Not authorized'}, status=403)
         else:
             return render(request, '404.html', status=403)
+
+def delete_user(request, id):
+    user = get_current_user(request)
+    if not user:
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+
+    user_id = user.id
+    user_roles = UserRole.objects.filter(user_id=user_id).select_related('role')
+    roles = [user_role.role.name for user_role in user_roles]
+
+    if "admin" in roles:
+        if User.objects.filter(id=id).exists():
+            User.objects.filter(id=id).delete()
+            return JsonResponse({'message': 'User deleted successfully'})
+        else:
+            return JsonResponse({'error': 'User does not exist'}, status=404)
+    else:
+        return JsonResponse({'error': 'Not authorized'}, status=403)
