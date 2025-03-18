@@ -18,9 +18,10 @@ urlpatterns += i18n_patterns(
     path('login/', views.login_view, name='login'),
     path('logout/', views.logout_view, name='logout_view'),
     path('error/page/', views.error_page, name="error_page"),
-
+    
     prefix_default_language=True,
 )
+
 
 # Static file serving
 if settings.DEBUG:

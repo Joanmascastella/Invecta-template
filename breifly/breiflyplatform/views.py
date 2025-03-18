@@ -21,25 +21,46 @@ from .models import (
 import csv
 import os
 import logging
+from .supabase_client import supabase
 
 logger = logging.getLogger(__name__)
 
 # --------------------------------
 # Public / Landing Views
 # --------------------------------
+def get_current_user():
+    try:
+        session = supabase.auth.get_session()
+        if session:
+            user = session.user
+            print(f"Supabase Response: user={user} session={session}")
+            return user
+        else:
+            print("No active session.")
+            return None
+    except Exception as e:
+        print(f"Error getting user: {e}")
+        return None
+
+
+
 def landing_page(request):
     try:
         if request.method == 'GET':
             user_authenticated, user_data = get_access_token(request)
-
+        
             if not user_authenticated:
                 if wants_json_response(request):
                     return JsonResponse({'error': 'Not authenticated'}, status=401)
                 return redirect('/login')
 
-            user_id = user_data.id
+            user_id = "bc188b4b-bd9b-48b6-a5ad-74f3555ffe08"
             user_roles = UserRole.objects.filter(user_id=user_id).select_related('role')
             roles = [user_role.role.name for user_role in user_roles]
+            user = get_current_user()
+            print(user)
+            print("\n")
+            print(f"User ID: {user_id}, Roles: {roles}")
 
             if 'user' in roles:
                 context = {
@@ -49,7 +70,7 @@ def landing_page(request):
                     'roles': roles,
                     'navbar_partial': 'partials/authenticated_navbar.html',
                     'LANGUAGES': settings.LANGUAGES,
-                    
+
                 }
                 return render(request, 'main_page.html', context)
 
@@ -97,7 +118,6 @@ def login_view(request):
             })
 
         elif request.method == 'POST':
-            # Handle POST login
             try:
                 data = json.loads(request.body)
             except json.JSONDecodeError:
@@ -106,27 +126,30 @@ def login_view(request):
             email = sanitize(data.get('email'))
             password = sanitize(data.get('password'))
 
+            logger.info(f"Attempting login with email: {email}") # added logging
+            logger.info(f"Attempting login with password: {password}") # added logging
+
             if not email or not password:
                 return JsonResponse({'error': 'Email and password are required'}, status=400)
 
-            # Attempt authentication with Supabase
             try:
                 response = supabase.auth.sign_in_with_password({"email": email, "password": password})
                 if response.user:
-                    # Save session
                     request.session['access_token'] = response.session.access_token
                     request.session['user'] = {
                         "id": response.user.id,
-                        "email": response.user.email
+                        "email": response.user.email,
                     }
-                    return JsonResponse({'success': True, 'redirect_url': '/home/'}, status=200)
+                    return JsonResponse({'success': True, 'redirect_url': '/en-us/home/'}, status=200)
 
                 return JsonResponse({'error': 'Invalid email or password'}, status=400)
             except Exception as e:
+                logger.error(f"Authentication failed: {str(e)}") # added logging
                 return JsonResponse({'error': f'Authentication failed: {str(e)}'}, status=500)
 
         return JsonResponse({'error': 'Invalid request method'}, status=405)
     except Exception as e:
+        logger.error(f"Internal server error: {str(e)}") # added logging
         return JsonResponse({'error': f'Internal server error: {str(e)}'}, status=500)
 
 
