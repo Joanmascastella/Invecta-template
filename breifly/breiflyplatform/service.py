@@ -1,4 +1,5 @@
 from .supabase_client import supabase
+
 from .helper_functions import get_access_token, sanitize, wants_json_response
 from .models import (
     UserRole,
@@ -13,6 +14,7 @@ import datetime
 import csv
 import logging
 import json
+import uuid
 logger = logging.getLogger(__name__)
 
 # --------------------------------
@@ -279,3 +281,55 @@ def update_item(request, id):
             return JsonResponse({'error': str(e)}, status=500)
     else:
         return JsonResponse({'error': 'Not authorized'}, status=403)
+    
+
+
+def create_item(request):
+    user = get_current_user()
+    if not user:
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+
+    user_roles = UserRole.objects.filter(user_id=user.id).select_related('role')
+    roles = [user_role.role.name for user_role in user_roles]
+
+    if "admin" not in roles:
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+
+    try:
+        data = json.loads(request.body)
+        serial_number = sanitize(data.get('serial_number', ''))
+        provider = sanitize(data.get('provider', ''))
+        name = sanitize(data.get('name', ''))
+        category = sanitize(data.get('category', ''))
+        price = float(data.get('price', 0))
+    except json.JSONDecodeError:
+        return JsonResponse({'error': 'Invalid JSON data'}, status=400)
+    except (ValueError, TypeError):
+        return JsonResponse({'error': 'Formate invalido de precio'}, status=400)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)
+
+    if Item.objects.filter(serial_number=serial_number).exists():
+        return JsonResponse({'error': 'Numero de seria ya existe'}, status=400)
+
+    try:
+        new_item = Item.objects.create(
+            id=uuid.uuid4(), 
+            serial_number=serial_number,
+            provider=provider,
+            name=name,
+            category=category,
+            price=price
+        )
+        item_data = {
+            'item_id': str(new_item.id),
+            'name': new_item.name,
+            'serial_number': new_item.serial_number,
+            'provider': new_item.provider,
+            'category': new_item.category,
+            'price': new_item.price
+        }
+        return JsonResponse(item_data, status=201)
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
+

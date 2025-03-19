@@ -6,7 +6,6 @@
       <a href="{% url 'admin' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
         Página Anterior
       </a>
-      <h1 class="text-center" style="font-size: 1.8rem; font-weight: 300; margin: 0;">Gestionar Artículos</h1>
       <div class="d-flex">
         <!-- Button to trigger the Create Item Modal -->
         <a href="#" id="create-item-btn" class="btn btn-sm btn-success mx-1" data-bs-toggle="modal" data-bs-target="#createItemModal">
@@ -173,42 +172,33 @@
 </style>
 
 <script>
-document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('saveCreateItem').addEventListener('click', function() {
-        const itemName = document.getElementById('createItemName').value;
-        const itemSerial = document.getElementById('createItemSerial').value;
-        const itemProvider = document.getElementById('createItemProvider').value;
-        const itemCategory = document.getElementById('createItemCategory').value;
-        const itemPrice = document.getElementById('createItemPrice').value;
+        const formData = {
+            name: document.getElementById('createItemName').value,
+            serial_number: document.getElementById('createItemSerial').value,
+            provider: document.getElementById('createItemProvider').value,
+            category: document.getElementById('createItemCategory').value,
+            price: parseFloat(document.getElementById('createItemPrice').value)
+        };
 
-        fetch(`/create-item/`, {
+        fetch('/create-item/', {
             method: 'POST',
             headers: {
                 "Content-Type": "application/json",
                 "X-CSRFToken": getCSRFToken(),
             },
-            body: JSON.stringify({
-                name: itemName,
-                serial_number: itemSerial,
-                provider: itemProvider,
-                category: itemCategory,
-                price: itemPrice
-            })
+            body: JSON.stringify(formData)
         })
         .then(response => {
-            if (response.ok) {
-                return response.json();
-            } else {
-                throw new Error('Error al crear el artículo');
+            if (!response.ok) {
+                return response.json().then(err => { throw new Error(err.error || 'Error creating item'); });
             }
+            return response.json();
         })
         .then(newItem => {
-            Swal.fire(
-                '¡Creado!',
-                'El artículo ha sido creado.',
-                'success'
-            );
-            // Create a new list item element for the new item
+            Swal.fire('¡Creado!', 'El artículo ha sido creado.', 'success');
+            
             const itemsList = document.getElementById('items-list');
             const li = document.createElement('li');
             li.className = 'list-group-item d-flex justify-content-between align-items-center';
@@ -236,41 +226,15 @@ document.addEventListener('DOMContentLoaded', function() {
                        style="width: 80px; display: inline-block;">Eliminar</a>
                 </div>
             `;
-            // Append the new list item to the list
-            itemsList.appendChild(li);
-            // Bind the edit event for the new edit button
-            bindEditEvent(li.querySelector('.edit-item-btn'));
+            itemsList.prepend(li); // Add new item to the top of the list
 
-            // Close the create modal and reset the form
-            const createModalElement = document.getElementById('createItemModal');
-            const createModalInstance = bootstrap.Modal.getInstance(createModalElement);
-            createModalInstance.hide();
+            const createModal = bootstrap.Modal.getInstance(document.getElementById('createItemModal'));
+            createModal.hide();
             document.getElementById('createItemForm').reset();
         })
         .catch(error => {
-            console.error('Error:', error);
-            Swal.fire(
-                'Error',
-                'No se pudo crear el artículo.',
-                'error'
-            );
+            Swal.fire('Error', error.message, 'error');
         });
     });
 });
-
-// CSRF token retrieval function
-function getCSRFToken() {
-    let cookieValue = null;
-    if (document.cookie && document.cookie !== '') {
-        const cookies = document.cookie.split(';');
-        for (let i = 0; i < cookies.length; i++) {
-            const cookie = cookies[i].trim();
-            if (cookie.substring(0, 'csrftoken='.length) === 'csrftoken=') {
-                cookieValue = decodeURIComponent(cookie.substring('csrftoken='.length));
-                break;
-            }
-        }
-    }
-    return cookieValue;
-}
 </script>
