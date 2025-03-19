@@ -11,7 +11,7 @@ function updateUserRole(userId) {
         confirmButtonText: 'Sí, ¡actualizar!'
     }).then((result) => {
         if (result.isConfirmed) {
-            fetch(`/delete-user/${userId}/`, {
+            fetch(`/update-user/${userId}/`, {
                 method: 'PUT',
                 headers: {
                     "Content-Type": "application/json",

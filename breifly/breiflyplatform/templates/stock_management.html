@@ -1,125 +1,276 @@
 {% include 'header.html' %}
 
 <div class="min-vh-100 d-flex flex-column">
-    <div class="container py-5 flex-grow-1">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <a href="{% url 'admin' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
-                Página Anterior
-            </a>
-            <h1 class="text-center" style="font-size: 2.2rem; font-weight: 500;">Gestionar Artículos</h1>
-            <div></div>
-        </div>
-
-        <ul class="list-group">
-            {% for item in items %}
-            <li class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <strong>{{ item.name }}</strong><br>
-                    Número de Serie: {{ item.serial_number }}<br>
-                    Proveedor: {{ item.provider }}<br>
-                    Categoría: {{ item.category }}<br>
-                    Precio: {{ item.price }}
-                </div>
-                <div>
-                    <a href="#" class="btn btn-sm btn-primary mx-1 edit-item-btn"
-                       data-item-id="{{ item.item_id }}"
-                       data-item-name="{{ item.name }}"
-                       data-item-serial="{{ item.serial_number }}"
-                       data-item-provider="{{ item.provider }}"
-                       data-item-category="{{ item.category }}"
-                       data-item-price="{{ item.price }}"
-                       style="width: 80px; display: inline-block;">Editar</a>
-                    <a href="#" class="btn btn-sm btn-danger mx-1 delete-user-btn"
-                       onclick="deleteItem('{{ item.item_id }}')"
-                       data-user-id="{{ item.item_id }}"
-                       style="width: 80px; display: inline-block;">Eliminar</a>
-                </div>
-            </li>
-            {% endfor %}
-        </ul>
-
-        <div class="mt-4 d-flex justify-content-center">
-            {% if items.has_other_pages %}
-            <ul class="pagination">
-                {% if items.has_previous %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ items.previous_page_number }}">Anterior</a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link">Anterior</span>
-                </li>
-                {% endif %}
-                {% for i in items.paginator.page_range %}
-                {% if items.number == i %}
-                <li class="page-item active">
-                    <span class="page-link">{{ i }}</span>
-                </li>
-                {% else %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ i }}">{{ i }}</a>
-                </li>
-                {% endif %}
-                {% endfor %}
-                {% if items.has_next %}
-                <li class="page-item">
-                    <a class="page-link" href="?page={{ items.next_page_number }}">Siguiente</a>
-                </li>
-                {% else %}
-                <li class="page-item disabled">
-                    <span class="page-link">Siguiente</span>
-                </li>
-                {% endif %}
-            </ul>
-            {% endif %}
-        </div>
+  <div class="container py-5 flex-grow-1">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <a href="{% url 'admin' %}" class="btn btn-sm btn-outline-secondary rounded-pill">
+        Página Anterior
+      </a>
+      <h1 class="text-center" style="font-size: 1.8rem; font-weight: 300; margin: 0;">Gestionar Artículos</h1>
+      <div class="d-flex">
+        <!-- Button to trigger the Create Item Modal -->
+        <a href="#" id="create-item-btn" class="btn btn-sm btn-success mx-1" data-bs-toggle="modal" data-bs-target="#createItemModal">
+          Crear nuevo artículo
+        </a>
+        <a href="#" class="btn btn-sm btn-secondary mx-1">Descargar CSV</a>
+        <a href="#" class="btn btn-sm btn-primary mx-1">Importar CSV</a>
+      </div>
     </div>
+
+    <!-- List of items -->
+    <ul class="list-group" id="items-list">
+      {% for item in items %}
+      <li class="list-group-item d-flex justify-content-between align-items-center" data-item-id="{{ item.item_id }}">
+        <div>
+          <strong>{{ item.name }}</strong><br>
+          Número de Serie: {{ item.serial_number }}<br>
+          Proveedor: {{ item.provider }}<br>
+          Categoría: {{ item.category }}<br>
+          Precio: {{ item.price }}
+        </div>
+        <div>
+          <a href="#" class="btn btn-sm btn-primary mx-1 edit-item-btn"
+             data-item-id="{{ item.item_id }}"
+             data-item-name="{{ item.name }}"
+             data-item-serial="{{ item.serial_number }}"
+             data-item-provider="{{ item.provider }}"
+             data-item-category="{{ item.category }}"
+             data-item-price="{{ item.price }}"
+             style="width: 80px; display: inline-block;">Editar</a> <br>
+          <a href="#" class="btn btn-sm btn-danger mx-1 delete-user-btn"
+             onclick="deleteItem('{{ item.item_id }}')"
+             data-user-id="{{ item.item_id }}"
+             style="width: 80px; display: inline-block;">Eliminar</a>
+        </div>
+      </li>
+      {% endfor %}
+    </ul>
+
+    <!-- Pagination (if needed) -->
+    <div class="mt-4 d-flex justify-content-center">
+      {% if items.has_other_pages %}
+      <ul class="pagination">
+        {% if items.has_previous %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ items.previous_page_number }}">Anterior</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Anterior</span>
+        </li>
+        {% endif %}
+        {% for i in items.paginator.page_range %}
+        {% if items.number == i %}
+        <li class="page-item active">
+          <span class="page-link">{{ i }}</span>
+        </li>
+        {% else %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ i }}">{{ i }}</a>
+        </li>
+        {% endif %}
+        {% endfor %}
+        {% if items.has_next %}
+        <li class="page-item">
+          <a class="page-link" href="?page={{ items.next_page_number }}">Siguiente</a>
+        </li>
+        {% else %}
+        <li class="page-item disabled">
+          <span class="page-link">Siguiente</span>
+        </li>
+        {% endif %}
+      </ul>
+      {% endif %}
+    </div>
+  </div>
 </div>
 
 <!-- Edit Item Modal -->
 <div class="modal fade" id="editItemModal" tabindex="-1" aria-labelledby="editItemModalLabel" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="editItemModalLabel">Editar Artículo</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <form id="editItemForm">
-                    <input type="hidden" id="editItemId" name="item_id">
-                    <div class="mb-3">
-                        <label for="editItemName" class="form-label">Nombre</label>
-                        <input type="text" class="form-control" id="editItemName" name="name">
-                    </div>
-                    <div class="mb-3">
-                        <label for="editItemSerial" class="form-label">Número de Serie</label>
-                        <input type="text" class="form-control" id="editItemSerial" name="serial_number">
-                    </div>
-                    <div class="mb-3">
-                        <label for="editItemProvider" class="form-label">Proveedor</label>
-                        <input type="text" class="form-control" id="editItemProvider" name="provider">
-                    </div>
-                    <div class="mb-3">
-                        <label for="editItemCategory" class="form-label">Categoría</label>
-                        <input type="text" class="form-control" id="editItemCategory" name="category">
-                    </div>
-                    <div class="mb-3">
-                        <label for="editItemPrice" class="form-label">Precio</label>
-                        <input type="number" class="form-control" id="editItemPrice" name="price">
-                    </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                <button type="button" class="btn btn-primary" id="saveEditItem">Guardar</button>
-            </div>
-        </div>
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="editItemModalLabel">Editar Artículo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="editItemForm">
+          <input type="hidden" id="editItemId" name="item_id">
+          <div class="mb-3">
+            <label for="editItemName" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="editItemName" name="name">
+          </div>
+          <div class="mb-3">
+            <label for="editItemSerial" class="form-label">Número de Serie</label>
+            <input type="text" class="form-control" id="editItemSerial" name="serial_number">
+          </div>
+          <div class="mb-3">
+            <label for="editItemProvider" class="form-label">Proveedor</label>
+            <input type="text" class="form-control" id="editItemProvider" name="provider">
+          </div>
+          <div class="mb-3">
+            <label for="editItemCategory" class="form-label">Categoría</label>
+            <input type="text" class="form-control" id="editItemCategory" name="category">
+          </div>
+          <div class="mb-3">
+            <label for="editItemPrice" class="form-label">Precio</label>
+            <input type="number" class="form-control" id="editItemPrice" name="price">
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="saveEditItem">Guardar</button>
+      </div>
     </div>
+  </div>
+</div>
+
+<!-- Create Item Modal -->
+<div class="modal fade" id="createItemModal" tabindex="-1" aria-labelledby="createItemModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="createItemModalLabel">Crear Artículo</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form id="createItemForm">
+          <div class="mb-3">
+            <label for="createItemName" class="form-label">Nombre</label>
+            <input type="text" class="form-control" id="createItemName" name="name" required>
+          </div>
+          <div class="mb-3">
+            <label for="createItemSerial" class="form-label">Número de Serie</label>
+            <input type="text" class="form-control" id="createItemSerial" name="serial_number" required>
+          </div>
+          <div class="mb-3">
+            <label for="createItemProvider" class="form-label">Proveedor</label>
+            <input type="text" class="form-control" id="createItemProvider" name="provider" required>
+          </div>
+          <div class="mb-3">
+            <label for="createItemCategory" class="form-label">Categoría</label>
+            <input type="text" class="form-control" id="createItemCategory" name="category" required>
+          </div>
+          <div class="mb-3">
+            <label for="createItemPrice" class="form-label">Precio</label>
+            <input type="number" class="form-control" id="createItemPrice" name="price" required>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <button type="button" class="btn btn-primary" id="saveCreateItem">Guardar</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <style>
-    .btn:hover {
-        transform: translateY(-3px);
-    }
+  .btn:hover {
+    transform: translateY(-3px);
+  }
 </style>
 
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    document.getElementById('saveCreateItem').addEventListener('click', function() {
+        const itemName = document.getElementById('createItemName').value;
+        const itemSerial = document.getElementById('createItemSerial').value;
+        const itemProvider = document.getElementById('createItemProvider').value;
+        const itemCategory = document.getElementById('createItemCategory').value;
+        const itemPrice = document.getElementById('createItemPrice').value;
+
+        fetch(`/create-item/`, {
+            method: 'POST',
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCSRFToken(),
+            },
+            body: JSON.stringify({
+                name: itemName,
+                serial_number: itemSerial,
+                provider: itemProvider,
+                category: itemCategory,
+                price: itemPrice
+            })
+        })
+        .then(response => {
+            if (response.ok) {
+                return response.json();
+            } else {
+                throw new Error('Error al crear el artículo');
+            }
+        })
+        .then(newItem => {
+            Swal.fire(
+                '¡Creado!',
+                'El artículo ha sido creado.',
+                'success'
+            );
+            // Create a new list item element for the new item
+            const itemsList = document.getElementById('items-list');
+            const li = document.createElement('li');
+            li.className = 'list-group-item d-flex justify-content-between align-items-center';
+            li.setAttribute('data-item-id', newItem.item_id);
+            li.innerHTML = `
+                <div>
+                    <strong>${newItem.name}</strong><br>
+                    Número de Serie: ${newItem.serial_number}<br>
+                    Proveedor: ${newItem.provider}<br>
+                    Categoría: ${newItem.category}<br>
+                    Precio: ${newItem.price}
+                </div>
+                <div>
+                    <a href="#" class="btn btn-sm btn-primary mx-1 edit-item-btn"
+                       data-item-id="${newItem.item_id}"
+                       data-item-name="${newItem.name}"
+                       data-item-serial="${newItem.serial_number}"
+                       data-item-provider="${newItem.provider}"
+                       data-item-category="${newItem.category}"
+                       data-item-price="${newItem.price}"
+                       style="width: 80px; display: inline-block;">Editar</a> <br>
+                    <a href="#" class="btn btn-sm btn-danger mx-1 delete-user-btn"
+                       onclick="deleteItem('${newItem.item_id}')"
+                       data-user-id="${newItem.item_id}"
+                       style="width: 80px; display: inline-block;">Eliminar</a>
+                </div>
+            `;
+            // Append the new list item to the list
+            itemsList.appendChild(li);
+            // Bind the edit event for the new edit button
+            bindEditEvent(li.querySelector('.edit-item-btn'));
+
+            // Close the create modal and reset the form
+            const createModalElement = document.getElementById('createItemModal');
+            const createModalInstance = bootstrap.Modal.getInstance(createModalElement);
+            createModalInstance.hide();
+            document.getElementById('createItemForm').reset();
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            Swal.fire(
+                'Error',
+                'No se pudo crear el artículo.',
+                'error'
+            );
+        });
+    });
+});
+
+// CSRF token retrieval function
+function getCSRFToken() {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, 'csrftoken='.length) === 'csrftoken=') {
+                cookieValue = decodeURIComponent(cookie.substring('csrftoken='.length));
+                break;
+            }
+        }
+    }
+    return cookieValue;
+}
+</script>

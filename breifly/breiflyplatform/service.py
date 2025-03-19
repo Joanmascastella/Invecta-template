@@ -261,12 +261,12 @@ def update_item(request, id):
 
             # Create a new item with the updated data
             Item.objects.create(
-                id=id, # use id not item_id
-                serial_number=data.get('serial_number', ''),
-                provider=data.get('provider', ''),
-                name=data.get('name', ''),
-                category=data.get('category', ''),
-                price=float(data.get('price', 0)) if data.get('price') not in [None, ''] else 0,
+                id=id, 
+                serial_number=sanitize(data.get('serial_number', '')),
+                provider=sanitize(data.get('provider', '')),
+                name=sanitize(data.get('name', '')),
+                category=sanitize(data.get('category', '')),
+                price=sanitize(float(data.get('price', 0)) if data.get('price') not in [None, ''] else 0),
             )
 
             return JsonResponse({'message': 'Item updated successfully'})

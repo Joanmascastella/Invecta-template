@@ -71,7 +71,7 @@ document.addEventListener('DOMContentLoaded', function() {
                            data-item-provider="${itemProvider}"
                            data-item-category="${itemCategory}"
                            data-item-price="${itemPrice}"
-                           style="width: 80px; display: inline-block;">Editar</a>
+                           style="width: 80px; display: inline-block;">Editar</a> <br>
                         <a href="#" class="btn btn-sm btn-danger mx-1 delete-user-btn"
                            onclick="deleteItem('${itemId}')"
                            data-user-id="${itemId}"
