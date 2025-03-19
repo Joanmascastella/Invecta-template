@@ -24,41 +24,45 @@ logger = logging.getLogger(__name__)
 # --------------------------------
 def landing_page(request):
     """
-    Initial page that is accessed. If no user is logged in then user is redirected
-    to login page. If logged in it checks the role of the user to redirect them to the correct page. 
+    Initial page accessed. If no user is logged in then user is redirected
+    to the login page. If logged in, it checks the role of the user to redirect them accordingly.
     """
     try:
-            user_authenticated, user_data, roles = get_role_by_id(request)
-        
-            if not user_authenticated:
-                if wants_json_response(request):
-                    return JsonResponse({'error': 'Not authenticated'}, status=401)
-                return redirect('/login')
+        user_authenticated, user_data, roles = get_role_by_id(request)
+    
+        if not user_authenticated:
+            if wants_json_response(request):
+                return JsonResponse({'error': 'Not authenticated'}, status=401)
+            return redirect('/login')
 
-            user_id = user_data.id
-
-            if 'user' in roles:
-                if request.method == 'GET':
-                    return render(request, 'main_page.html', {
-                        'title': 'Briefly - Home',
-                        'user_authenticated': user_authenticated,
-                        'user': user_data,
-                        'roles': roles,
-                        'navbar_partial': 'partials/authenticated_navbar.html',
-                    })
-
-            elif 'admin' in roles:
-                if request.method == 'GET':
-                    return redirect('/custom-admin/dashboard/')
+        # For a "user" role, only GET is supported
+        if 'user' in roles:
+            if request.method == 'GET':
+                return render(request, 'main_page.html', {
+                    'title': 'Briefly - Home',
+                    'user_authenticated': user_authenticated,
+                    'user': user_data,
+                    'roles': roles,
+                    'navbar_partial': 'partials/authenticated_navbar.html',
+                })
             else:
-                if wants_json_response(request):
-                    return JsonResponse({'error': str(e)}, status=500)
-                return render(request, '404.html', status=500) 
+                return JsonResponse({'error': 'Method not allowed'}, status=405)
+
+        # For an "admin" role, redirect to the admin dashboard
+        elif 'admin' in roles:
+            if request.method == 'GET':
+                return redirect('/custom-admin/dashboard/')
+            else:
+                return JsonResponse({'error': 'Method not allowed'}, status=405)
+        else:
+            if wants_json_response(request):
+                return JsonResponse({'error': 'User role not recognized'}, status=500)
+            return render(request, '404.html', status=500)
     except Exception as e:
+        # In case of unexpected errors, return a 500 error.
         if wants_json_response(request):
             return JsonResponse({'error': str(e)}, status=500)
-        return render(request, '404.html', status=500) 
-
+        return render(request, '404.html', status=500)
 
 
 # --------------------------------
@@ -66,97 +70,87 @@ def landing_page(request):
 # --------------------------------
 def admin_page(request):
     """
-    Admin dashboard allowing users to navigate to user and stock management
+    Admin dashboard allowing navigation to user and stock management.
     """
     try:
+        user_authenticated, user_data, roles = get_role_by_id(request=request)
+
+        if not user_authenticated:
+            if wants_json_response(request):
+                return JsonResponse({'error': 'Not authenticated'}, status=401)
+            return redirect('/login')
         
-            user_authenticated, user_data, roles = get_role_by_id(request=request)
-
-            # Check if user is authenticated 
-            if not user_authenticated:
-                if wants_json_response(request):
-                    return JsonResponse({'error': 'Not authenticated'}, status=401)
-                return redirect('/login')
-            
-            # Check the role of the user to verify it's an admin
-            if "admin" in roles: 
-                if request.method == "GET": 
-                    return render(request, 'admin_dashboard.html', {
-                        'title': 'Invecta - Admin',
-                        'user_authenticated': user_authenticated,
-                        'user': user_data,
-                        'roles': roles,
-                        'navbar_partial': 'partials/admin_authenticated_navbar.html',
-                    }) 
-                else:
-                    request.session.flush()
-                    if wants_json_response(request):
-                        return JsonResponse({'error': 'Not authorized'}, status=403) 
-                    return render(request, '404.html', status=403) 
-
+        if "admin" in roles: 
+            if request.method == "GET": 
+                return render(request, 'admin_dashboard.html', {
+                    'title': 'Invecta - Admin',
+                    'user_authenticated': user_authenticated,
+                    'user': user_data,
+                    'roles': roles,
+                    'navbar_partial': 'partials/admin_authenticated_navbar.html',
+                })
+            else:
+                return JsonResponse({'error': 'Method not allowed'}, status=405)
+        else:
+            if wants_json_response(request):
+                return JsonResponse({'error': 'Not authorized'}, status=403)
+            return render(request, '404.html', status=403)
     except Exception as e:
         if wants_json_response(request):
             return JsonResponse({'error': str(e)}, status=500)
-        return render(request, '404.html', status=500) 
+        return render(request, '404.html', status=500)
+
 
 def user_management_page(request, id=None):
     """
-    User Management page allowing users to edit users roles, and delete users 
+    User Management page allowing admins to edit user roles and delete users.
     """
     try:
-            user_authenticated, user_data, roles = get_role_by_id(request=request)
+        user_authenticated, user_data, roles = get_role_by_id(request=request)
 
-            if not user_authenticated:
-                if wants_json_response(request):
-                    return JsonResponse({'error': 'Not authenticated'}, status=401)
-                return redirect('/login')
-            
-            if "admin" in roles: 
-                if request.method == "GET": 
-                    all_users = get_all_users(request=request)
+        if not user_authenticated:
+            if wants_json_response(request):
+                return JsonResponse({'error': 'Not authenticated'}, status=401)
+            return redirect('/login')
 
-                    paginator = Paginator(all_users, 5)
-                    page = request.GET.get('page')
-
-                    try:
-                        users = paginator.page(page)
-                    except PageNotAnInteger:
-                        users = paginator.page(1)
-                    except EmptyPage:
-                        users = paginator.page(paginator.num_pages)
-
-                    return render(request, 'user_management.html', {
-                        'title': 'Invecta - User Management',
-                        'user_authenticated': user_authenticated,
-                        'user': user_data,
-                        'roles': roles,
-                        'navbar_partial': 'partials/admin_authenticated_navbar.html',
-                        'users': users,  
-                    }) 
-                else:
-                    request.session.flush()
-                    if wants_json_response(request):
-                        return JsonResponse({'error': 'Not authorized'}, status=403) 
-                    return render(request, '404.html', status=403) 
-            
-
-            elif request.method == "DELETE":
-                response = delete_user(id=id) 
-                return response
-            
-
+        if "admin" in roles:
+            if request.method == "GET":
+                all_users = get_all_users(request=request)
+                paginator = Paginator(all_users, 5)
+                page = request.GET.get('page')
+                try:
+                    users = paginator.page(page)
+                except PageNotAnInteger:
+                    users = paginator.page(1)
+                except EmptyPage:
+                    users = paginator.page(paginator.num_pages)
+                return render(request, 'user_management.html', {
+                    'title': 'Invecta - User Management',
+                    'user_authenticated': user_authenticated,
+                    'user': user_data,
+                    'roles': roles,
+                    'navbar_partial': 'partials/admin_authenticated_navbar.html',
+                    'users': users,
+                })
             elif request.method == "PUT":
-                response = update_role(request=request, id=id)
-                return response
-            
+                return update_role(request=request, id=id)
+            elif request.method == "DELETE":
+                return delete_user(id=id)
+            else:
+                return JsonResponse({'error': 'Method not allowed'}, status=405)
+        else:
+            if wants_json_response(request):
+                return JsonResponse({'error': 'Not authorized'}, status=403)
+            return render(request, '404.html', status=403)
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
 
+
 def item_management_page(request, id=None):
     """
-    Item management page allowing users to edit, add, view and delete stock items.
-    Handles GET, PUT, and DELETE requests.
+    Item management page allowing admins to edit, add, view, and delete stock items.
+    Handles GET, PUT, DELETE, and POST requests.
     """
     try:
         user_authenticated, user_data, roles = get_role_by_id(request=request)
@@ -167,7 +161,7 @@ def item_management_page(request, id=None):
             return redirect('/login')
 
         if "admin" not in roles:
-            request.session.flush()
+            # Instead of flushing the session, return a 403 error.
             if wants_json_response(request):
                 return JsonResponse({'error': 'Not authorized'}, status=403)
             return render(request, '404.html', status=403)
@@ -176,14 +170,12 @@ def item_management_page(request, id=None):
             all_items = get_all_items(request=request)
             paginator = Paginator(all_items, 5)
             page = request.GET.get('page')
-
             try:
                 items = paginator.page(page)
             except PageNotAnInteger:
                 items = paginator.page(1)
             except EmptyPage:
                 items = paginator.page(paginator.num_pages)
-
             return render(request, 'stock_management.html', {
                 'title': 'Invecta - Stock Management',
                 'user_authenticated': user_authenticated,
@@ -192,30 +184,25 @@ def item_management_page(request, id=None):
                 'navbar_partial': 'partials/admin_authenticated_navbar.html',
                 'items': items,
             })
-
         elif request.method == "PUT":
             if id is None:
                 return JsonResponse({'error': 'Item ID is required for PUT requests'}, status=400)
-            response = update_item(request, id=id)
-            return response
-
+            return update_item(request, id=id)
         elif request.method == "DELETE":
             if id is None:
                 return JsonResponse({'error': 'Item ID is required for DELETE requests'}, status=400)
-            response = delete_item(id=id)
-            return response
-        
+            return delete_item(id=id)
         elif request.method == "POST":
-            response = create_item(request)
-            return response
-
+            return create_item(request)
         else:
             return JsonResponse({'error': 'Method not allowed'}, status=405)
-
     except Exception as e:
         if wants_json_response(request):
             return JsonResponse({'error': str(e)}, status=500)
         return render(request, '404.html', status=500)
+
+
+
 
 # --------------------------------
 # Error View
