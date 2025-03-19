@@ -6,7 +6,7 @@ from django.utils.translation import gettext as _  # For language handling
 from datetime import time
 from django.http import HttpResponse
 from django.shortcuts import render, redirect
-from django.http import JsonResponse
+from django.http import JsonResponse, StreamingHttpResponse
 from django.views.decorators.csrf import csrf_exempt, csrf_protect
 import pytz
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
@@ -16,6 +16,7 @@ import csv
 import os
 import logging
 from .service import *
+from io import StringIO  
 
 logger = logging.getLogger(__name__)
 
@@ -146,7 +147,6 @@ def user_management_page(request, id=None):
         return JsonResponse({'error': str(e)}, status=500)
 
 
-
 def item_management_page(request, id=None):
     """
     Item management page allowing admins to edit, add, view, and delete stock items.
@@ -202,6 +202,54 @@ def item_management_page(request, id=None):
         return render(request, '404.html', status=500)
 
 
+def download_csv(request):
+    """
+    Generates a CSV file to download.
+    """
+    try:
+        user_authenticated, user_data, roles = get_role_by_id(request=request)
+
+        if not user_authenticated:
+            if wants_json_response(request):
+                return JsonResponse({'error': 'Not authenticated'}, status=401)
+            return redirect('/login')
+
+        if "admin" not in roles:
+            if wants_json_response(request):
+                return JsonResponse({'error': 'Not authorized'}, status=403)
+            return render(request, '404.html', status=403)
+
+        if request.method == "GET":
+            items = get_download_all_items(request=request)
+
+            def rows(items):
+                yield ["Serial Number", "Provider", "Name", "Category", "Price"]
+                for item in items:
+                    yield [item.serial_number, item.provider, item.name, item.category, item.price]
+
+            def generate_csv(rows_generator):
+                output = StringIO()
+                writer = csv.writer(output)
+                for row in rows_generator:
+                    writer.writerow(row)
+                    yield output.getvalue()
+                    output.seek(0)
+                    output.truncate(0)
+
+            response = StreamingHttpResponse(
+                generate_csv(rows(items)),
+                content_type='text/csv'
+            )
+            date_str = datetime.datetime.now().strftime("%Y-%m-%d")
+            response['Content-Disposition'] = f'attachment; filename="exported_stock_item_data_{date_str}.csv"'
+            return response
+
+        else:
+            return JsonResponse({'error': 'Method not allowed'}, status=405)
+    except Exception as e:
+        if wants_json_response(request):
+            return JsonResponse({'error': str(e)}, status=500)
+        return render(request, '404.html', status=500)
 
 
 # --------------------------------

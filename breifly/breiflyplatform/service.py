@@ -333,3 +333,24 @@ def create_item(request):
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
 
+def get_download_all_items(request):
+    """
+    Gets all items.
+    """
+    user = get_current_user()
+    if not user:
+        if wants_json_response(request):
+            return JsonResponse({'error': 'Unauthorized'}, status=401)
+        else:
+            return render(request, '404.html', status=401)
+
+    user_id = user.id
+    user_roles = UserRole.objects.filter(user_id=user_id).select_related('role')
+    roles = [user_role.role.name for user_role in user_roles]
+    if "admin" in roles:
+        return Item.objects.order_by('serial_number')
+    else:
+        if wants_json_response(request):
+            return JsonResponse({'error': 'Not authorized'}, status=403)
+        else:
+            return render(request, '404.html', status=403)
