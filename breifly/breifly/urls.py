@@ -11,6 +11,7 @@ urlpatterns = [
     path('custom-admin/dashboard/users', views.user_management_page, name='user_management_page'),
     path('custom-admin/dashboard/items', views.item_management_page, name='item_management_page'),
     path('download/csv/', views.download_csv, name='download_item'),
+    path('upload/csv/', views.upload_csv, name='upload_csv'),
     path('update-item/<uuid:id>/', views.item_management_page, name='update_item'),
     path('create-item/', views.item_management_page, name='create_item'),
     path('delete-items/<uuid:id>/', views.item_management_page, name='delete_item'),

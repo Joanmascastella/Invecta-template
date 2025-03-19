@@ -15,6 +15,7 @@ import csv
 import logging
 import json
 import uuid
+from io import TextIOWrapper
 logger = logging.getLogger(__name__)
 
 # --------------------------------
@@ -354,3 +355,56 @@ def get_download_all_items(request):
             return JsonResponse({'error': 'Not authorized'}, status=403)
         else:
             return render(request, '404.html', status=403)
+
+
+def import_csv(request):
+    """
+    Imports items from a CSV file.
+    """
+    user = get_current_user()
+    if not user:
+        return JsonResponse({'error': 'Unauthorized'}, status=401)
+
+    user_roles = UserRole.objects.filter(user_id=user.id).select_related('role')
+    roles = [user_role.role.name for user_role in user_roles]
+
+    if "admin" not in roles:
+        return JsonResponse({'error': 'Not authorized'}, status=403)
+
+    try:
+        csv_file = TextIOWrapper(request.FILES['csv_file'].file, encoding='utf-8')
+        reader = csv.reader(csv_file)
+        next(reader)  # Skip header row
+
+        created_items = []
+        for row in reader:
+            serial_number = sanitize(row[0])
+            provider = sanitize(row[1])
+            name = sanitize(row[2])
+            category = sanitize(row[3])
+            price = float(row[4])
+
+            if Item.objects.filter(serial_number=serial_number).exists():
+                return JsonResponse({'error': f'Numero de serie {serial_number} ya existe.'}, status=400)
+
+            new_item = Item.objects.create(
+                id=uuid.uuid4(),
+                serial_number=serial_number,
+                provider=provider,
+                name=name,
+                category=category,
+                price=price
+            )
+            created_items.append({
+                'item_id': str(new_item.id),
+                'name': new_item.name,
+                'serial_number': new_item.serial_number,
+                'provider': new_item.provider,
+                'category': new_item.category,
+                'price': new_item.price
+            })
+
+        return JsonResponse({'message': 'CSV importado correctamente.', 'items': created_items}, status=201)
+
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=400)

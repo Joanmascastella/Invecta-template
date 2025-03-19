@@ -12,7 +12,8 @@
           Crear nuevo artículo
         </a>
         <a href="#" onclick="downloadCSV()" class="btn btn-sm btn-secondary mx-1">Descargar CSV</a>
-        <a href="#" class="btn btn-sm btn-primary mx-1">Importar CSV</a>
+        <label for="csvFileInput" class="btn btn-sm btn-primary mx-1">Importar CSV</label>
+        <input type="file" id="csvFileInput" style="display: none;" accept=".csv">
       </div>
     </div>
 
@@ -170,4 +171,3 @@
     transform: translateY(-3px);
   }
 </style>
-

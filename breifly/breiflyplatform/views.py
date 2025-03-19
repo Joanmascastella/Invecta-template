@@ -251,6 +251,33 @@ def download_csv(request):
             return JsonResponse({'error': str(e)}, status=500)
         return render(request, '404.html', status=500)
 
+def upload_csv(request):
+    """
+    Imports a CSV file.
+    """
+    try:
+        user_authenticated, user_data, roles = get_role_by_id(request=request)
+
+        if not user_authenticated:
+            if wants_json_response(request):
+                return JsonResponse({'error': 'Not authenticated'}, status=401)
+            return redirect('/login')
+
+        if "admin" not in roles:
+            if wants_json_response(request):
+                return JsonResponse({'error': 'Not authorized'}, status=403)
+            return render(request, '404.html', status=403)
+
+        if request.method == "POST":
+            response = import_csv(request=request)
+            return response
+
+        else:
+            return JsonResponse({'error': 'Method not allowed'}, status=405)
+    except Exception as e:
+        if wants_json_response(request):
+            return JsonResponse({'error': str(e)}, status=500)
+        return render(request, '404.html', status=500)
 
 # --------------------------------
 # Error View
